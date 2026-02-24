@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, Loader2, Sparkles, Lock, Check } from 'lucide-react'
+import {  Loader2, Sparkles, Lock, Check } from 'lucide-react'
 import { personas, getMaxPersonas, isPersonaLocked } from '@/lib/ai/personas'
 import type { SubscriptionTier } from '@prisma/client'
 
@@ -66,6 +66,13 @@ export default function NewDiscussionForm({ tier = 'FREE' }: NewDiscussionFormPr
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e as any)
+    }
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -77,10 +84,14 @@ export default function NewDiscussionForm({ tier = 'FREE' }: NewDiscussionFormPr
             id="prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Enter your question, idea, or topic..."
             className="min-h-[150px] w-full rounded-xl border border-white/10 bg-white/5 p-4 text-foreground placeholder:text-muted-foreground focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple"
             required
           />
+          <p className="mt-2 text-[10px] text-white/30">
+            Press Enter to start · Shift+Enter for new line
+          </p>
         </div>
 
         <div>
@@ -142,7 +153,7 @@ export default function NewDiscussionForm({ tier = 'FREE' }: NewDiscussionFormPr
         <button
           type="submit"
           disabled={loading || !prompt.trim() || selectedPersonas.length === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-purple px-6 py-3 font-medium text-white transition-colors hover:bg-brand-purple/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-cyan py-4 font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -156,6 +167,10 @@ export default function NewDiscussionForm({ tier = 'FREE' }: NewDiscussionFormPr
             </>
           )}
         </button>
+
+        <p className="mt-4 text-center text-xs text-white/30">
+          GroupMind AI can make mistakes. Always verify important information.
+        </p>
       </form>
 
       {showUpgradeModal && (

@@ -51,7 +51,7 @@ export default function AgentResponse({
 
       <div
         className={`prose prose-invert max-w-none ${
-          expanded ? '' : 'line-clamp-6'
+          expanded ? 'max-h-[500px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10' : 'line-clamp-6'
         }`}
       >
         <ReactMarkdown
@@ -94,9 +94,11 @@ export default function AgentResponse({
                 )
               }
               return (
-                <code className="block rounded-lg bg-[#1a1a2e] p-4 font-mono text-sm text-foreground">
-                  {children}
-                </code>
+                <div className="my-4 overflow-x-auto rounded-lg bg-[#1a1a2e] p-4">
+                  <code className="font-mono text-sm text-foreground">
+                    {children}
+                  </code>
+                </div>
               )
             },
             strong: ({ children }) => (

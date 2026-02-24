@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, Loader2 } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import AgentResponse from './AgentResponse'
 import type { Persona } from '@/lib/ai/personas'
 import type { SubscriptionTier } from '@prisma/client'
@@ -57,21 +57,24 @@ export default function RoundtableGrid({
   tier,
   onExpand,
 }: RoundtableGridProps): React.JSX.Element {
-  const [expandedCard, setExpandedCard] = useState<string | null>(null)
+  const [expandedIds, setExpandedIds] = useState<string[]>([])
 
   const getPersona = (personaId: string): Persona | undefined => {
     return personas.find((p) => p.id === personaId)
   }
 
   const toggleExpand = (personaId: string) => {
-    if (expandedCard === personaId) {
-      setExpandedCard(null)
-    } else {
-      setExpandedCard(personaId)
-      if (onExpand) {
-        onExpand(personaId)
+    setExpandedIds((prev) => {
+      const isExpanded = prev.includes(personaId)
+      if (isExpanded) {
+        return prev.filter((id) => id !== personaId)
+      } else {
+        if (onExpand) {
+          onExpand(personaId)
+        }
+        return [...prev, personaId]
       }
-    }
+    })
   }
 
   if (responses.length === 0) {
@@ -85,21 +88,23 @@ export default function RoundtableGrid({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
       {responses.map((response) => {
         const persona = getPersona(response.personaId)
         if (!persona) return null
 
         const color = personaColors[response.personaId] || '#8B5CF6'
-        const isExpanded = expandedCard === response.personaId
+        const isExpanded = expandedIds.includes(response.personaId)
 
         return (
           <div
             key={response.personaId}
-            className="group relative flex flex-col rounded-xl border border-white/10 bg-white/5 transition-all hover:border-white/20"
+            className={`group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:border-white/20 ${
+              isExpanded ? 'min-h-[400px] resize-y' : ''
+            }`}
             style={{ borderTopColor: color, borderTopWidth: '3px' }}
           >
-            <div className="flex-1 p-4">
+            <div className="flex-1 overflow-hidden p-4">
               {response.isLoading ? (
                 <ThinkingSkeleton personaName={persona.displayName} color={color} />
               ) : (

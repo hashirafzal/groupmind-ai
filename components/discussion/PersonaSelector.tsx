@@ -28,6 +28,7 @@ export default function PersonaSelector({
   const maxPersonas = getMaxPersonas(tier)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [lockedPersona, setLockedPersona] = useState<Persona | null>(null)
+  const [isVisible, setIsVisible] = useState(true)
 
   const handlePersonaClick = (persona: Persona) => {
     const locked = isPersonaLocked(persona, tier)
@@ -57,67 +58,83 @@ export default function PersonaSelector({
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
-          {selectedPersonas.length} of {personas.length} personas selected
-        </span>
-        <span className="text-sm text-muted-foreground">
-          Max: {maxPersonas}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            {selectedPersonas.length} of {personas.length} personas selected
+          </span>
+          <span className="text-sm text-muted-foreground">
+            Max: {maxPersonas}
+          </span>
+        </div>
+        <button
+          onClick={() => setIsVisible(!isVisible)}
+          className="text-xs font-medium text-white/50 transition-colors hover:text-white"
+        >
+          {isVisible ? 'Hide Personas ▲' : 'Show Personas ▼'}
+        </button>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {personas.map((persona) => {
-          const locked = isPersonaLocked(persona, tier)
-          const selected = selectedPersonas.includes(persona.id)
-          const tierBadge = tierBadges[persona.requiredTier]
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isVisible
+            ? 'max-h-[500px] opacity-100'
+            : 'pointer-events-none max-h-0 overflow-hidden opacity-0'
+        }`}
+      >
+        <div className="flex gap-3 overflow-x-auto pb-4 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
+          {personas.map((persona) => {
+            const locked = isPersonaLocked(persona, tier)
+            const selected = selectedPersonas.includes(persona.id)
+            const tierBadge = tierBadges[persona.requiredTier]
 
-          return (
-            <button
-              key={persona.id}
-              onClick={() => handlePersonaClick(persona)}
-              className={`relative flex min-w-[160px] flex-col rounded-xl border p-4 text-left transition-all ${
-                selected
-                  ? 'border-brand-purple bg-brand-purple/10 shadow-lg shadow-brand-purple/20'
-                  : locked
-                  ? 'border-amber-500/30 bg-amber-500/5'
-                  : 'border-white/10 bg-white/5 hover:border-white/20'
-              }`}
-            >
-              {selected && (
-                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-purple">
-                  <Check className="h-3 w-3 text-white" />
-                </div>
-              )}
-
-              {locked && (
-                <div className="absolute right-2 top-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
-
-              <div
-                className="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ backgroundColor: persona.color }}
-              >
-                {persona.displayName.charAt(0)}
-              </div>
-
-              <span className="font-medium text-foreground">{persona.displayName}</span>
-
-              <span className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                {persona.description}
-              </span>
-
-              <span
-                className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${
-                  tierBadge.color
+            return (
+              <button
+                key={persona.id}
+                onClick={() => handlePersonaClick(persona)}
+                className={`relative flex min-w-[160px] flex-col rounded-xl border p-4 text-left transition-all ${
+                  selected
+                    ? 'border-brand-purple bg-brand-purple/10 shadow-lg shadow-brand-purple/20'
+                    : locked
+                    ? 'border-amber-500/30 bg-amber-500/5'
+                    : 'border-white/10 bg-white/5 hover:border-white/20'
                 }`}
               >
-                {tierBadge.label}
-              </span>
-            </button>
-          )
-        })}
+                {selected && (
+                  <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-purple">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
+
+                {locked && (
+                  <div className="absolute right-2 top-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+
+                <div
+                  className="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold text-white"
+                  style={{ backgroundColor: persona.color }}
+                >
+                  {persona.displayName.charAt(0)}
+                </div>
+
+                <span className="font-medium text-foreground">{persona.displayName}</span>
+
+                <span className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  {persona.description}
+                </span>
+
+                <span
+                  className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${
+                    tierBadge.color
+                  }`}
+                >
+                  {tierBadge.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {showUpgradeModal && lockedPersona && (

@@ -3,10 +3,12 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { orchestrateDiscussion } from '@/lib/ai/orchestrator'
+import { recordUsage } from '@/lib/usage/enforce'
 
 const discussSchema = z.object({
   prompt: z.string().min(1).max(500),
   personas: z.array(z.string()).min(1),
+  conversationId: z.string().optional(),
   provider: z.enum(['groq', 'google', 'openrouter', 'huggingface', 'aimlapi']).optional(),
 })
 
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       )
     }
 
-    const { prompt, personas, provider } = parsed.data
+    const { prompt, personas, provider, conversationId } = parsed.data
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -36,12 +38,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const conversation = await prisma.conversation.create({
-      data: {
-        title: prompt.slice(0, 100),
-        createdById: user.id,
-      },
-    })
+    // Record usage
+    await recordUsage(user.id, 'discussion')
+
+    let conversation;
+    if (conversationId) {
+      conversation = await prisma.conversation.findUnique({
+        where: { id: conversationId }
+      })
+      
+      if (!conversation || conversation.createdById !== user.id) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+      }
+    } else {
+      conversation = await prisma.conversation.create({
+        data: {
+          title: prompt.slice(0, 100),
+          createdById: user.id,
+        },
+      })
+    }
 
     await prisma.message.create({
       data: {
@@ -65,7 +81,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.json(
-      { conversationId: conversation.id, message: 'Discussion created' },
+      { conversationId: conversation.id, messages: aiResponses.map(r => ({ role: 'AGENT', agentId: r.agentId, content: r.content })) },
       { status: 201 }
     )
   } catch (error) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Mic, AlertTriangle } from 'lucide-react'
+import { Send, Loader2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 interface PromptInputProps {
@@ -23,34 +23,32 @@ export default function PromptInput({
 }: PromptInputProps): React.JSX.Element {
   const [prompt, setPrompt] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [charCount, setCharCount] = useState(0)
-  const maxChars = 500
+  const maxChars = 2000
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
-    }
+    const textarea = textareaRef.current
+    if (!textarea) return
+    textarea.style.height = 'auto'
+    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'
   }, [prompt])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!prompt.trim() || isLoading || disabled || limitExceeded) return
 
     setIsLoading(true)
     try {
       await onSubmit(prompt)
       setPrompt('')
-      setCharCount(0)
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      handleSubmit(e)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
     }
   }
 
@@ -64,7 +62,7 @@ export default function PromptInput({
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0">
+    <div className="flex-shrink-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F] to-transparent pb-4 pt-10">
       {limitExceeded && (
         <div className="mx-auto max-w-4xl px-4 pb-2">
           <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
@@ -87,44 +85,28 @@ export default function PromptInput({
         </div>
       )}
 
-      <div className="border-t border-white/10 bg-[#0A0A0F]/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-4xl p-4">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <button
-              type="button"
-              disabled={true}
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 disabled:opacity-50"
-              title="Voice available on Pro"
-            >
-              <Mic className="h-5 w-5" />
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-white/10 px-2 py-1 text-xs text-foreground opacity-0 transition-opacity">
-                Voice available on Pro
-              </span>
-            </button>
-
-            <div className="relative flex-1">
-              <textarea
-                ref={textareaRef}
-                value={prompt}
-                onChange={(e) => {
-                  setPrompt(e.target.value.slice(0, maxChars))
-                  setCharCount(e.target.value.length)
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask a question or share an idea..."
-                disabled={disabled || limitExceeded}
-                rows={1}
-                className="max-h-[120px] w-full resize-none rounded-xl border border-white/10 bg-white/5 p-4 pr-16 text-foreground placeholder:text-muted-foreground focus:border-brand-purple focus:outline-none focus:ring-1 focus:ring-brand-purple disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <span className="absolute bottom-3 right-3 text-xs text-muted-foreground">
-                {charCount}/{maxChars}
-              </span>
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="relative flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition-all focus-within:border-brand-purple/50 focus-within:bg-white/[0.07]">
+          <div className="flex items-end gap-2">
+            <div className="mb-3 ml-3 hidden text-xs font-semibold uppercase tracking-widest text-white/20 md:block">
+              GroupMind AI
             </div>
 
+            <textarea
+              ref={textareaRef}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask a question or share an idea..."
+              disabled={disabled || limitExceeded}
+              rows={1}
+              className="min-h-[44px] max-h-[200px] w-full resize-none overflow-y-auto bg-transparent p-3 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent"
+            />
+
             <button
-              type="submit"
+              onClick={handleSubmit}
               disabled={isLoading || !prompt.trim() || disabled || limitExceeded}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-brand-purple to-brand-cyan text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-brand-purple to-brand-cyan text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -132,13 +114,21 @@ export default function PromptInput({
                 <Send className="h-5 w-5" />
               )}
             </button>
-          </form>
+          </div>
 
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Press <kbd className="rounded bg-white/10 px-1.5 py-0.5">⌘</kbd> +{' '}
-            <kbd className="rounded bg-white/10 px-1.5 py-0.5">Enter</kbd> to submit
-          </p>
+          <div className="flex items-center justify-between px-3 pb-1">
+            <p className="text-[10px] text-white/30">
+              Press Enter to send · Shift+Enter for new line
+            </p>
+            <span className="text-[10px] text-white/30">
+              {prompt.length}/{maxChars}
+            </span>
+          </div>
         </div>
+
+        <p className="mt-2 pb-2 text-center text-xs text-white/30">
+          GroupMind AI can make mistakes. Always verify important information.
+        </p>
       </div>
     </div>
   )

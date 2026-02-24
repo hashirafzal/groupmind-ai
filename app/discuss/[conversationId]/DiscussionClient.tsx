@@ -7,7 +7,7 @@ import PersonaSelector from '@/components/discussion/PersonaSelector'
 import RoundtableGrid from '@/components/discussion/RoundtableGrid'
 import CompareMode from '@/components/discussion/CompareMode'
 import PromptInput from '@/components/discussion/PromptInput'
-import { personas, getPersonaById } from '@/lib/ai/personas'
+import { personas } from '@/lib/ai/personas'
 import type { SubscriptionTier } from '@prisma/client'
 
 interface PersonaResponse {
@@ -90,20 +90,6 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
   const handleSubmit = async (prompt: string) => {
     if (!user || limitExceeded) return
 
-    // Record usage
-    await recordUsage(user.id, 'discussion')
-
-    // Add user message
-    await fetch('/api/ai/message', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        conversationId: conversation.id,
-        content: prompt,
-        role: 'USER',
-      }),
-    })
-
     // Set loading states for selected personas
     const newResponses: PersonaResponse[] = selectedPersonas.map((id) => ({
       personaId: id,
@@ -112,49 +98,50 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
     }))
     setResponses(newResponses)
 
-    // Call API for each persona
-    const results = await Promise.all(
-      selectedPersonas.map(async (personaId) => {
-        const persona = getPersonaById(personaId)
-        if (!persona) return { personaId, content: '', isLoading: false }
-
-        try {
-          const response = await fetch('/api/ai/discuss', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompt,
-              personas: [personaId],
-              conversationId: conversation.id,
-            }),
-          })
-
-          const data = await response.json()
-          
-          if (data.messages) {
-            const lastMessage = data.messages[data.messages.length - 1]
-            return {
-              personaId,
-              content: lastMessage?.content || '',
-              isLoading: false,
-            }
-          }
-
-          return { personaId, content: 'Failed to generate response', isLoading: false }
-        } catch (error) {
-          console.error('Error generating response:', error)
-          return { personaId, content: 'Error generating response', isLoading: false }
-        }
+    try {
+      // Call API for discussion (this handles recording usage and saving messages)
+      const response = await fetch('/api/ai/discuss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          personas: selectedPersonas,
+          conversationId: conversation.id,
+        }),
       })
-    )
 
-    setResponses(results)
-    setCurrentUsage((prev) => prev + 1)
+      const data = await response.json()
+      
+      if (data.messages) {
+        const results = data.messages.map((msg: any) => ({
+          personaId: msg.agentId,
+          content: msg.content,
+          isLoading: false,
+        }))
+        setResponses(results)
+      } else {
+        throw new Error(data.error || 'Failed to generate response')
+      }
 
-    // Refresh usage check
-    const usageResult = await checkUsageLimit(user.id, 'discussion')
-    setLimitExceeded(!usageResult.allowed)
-    setResetDate(usageResult.resetDate)
+      setCurrentUsage((prev) => prev + 1)
+
+      // Refresh usage check via API
+      const usageRes = await fetch('/api/usage/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usageType: 'discussion' }),
+      })
+      const usageResult = await usageRes.json()
+      setLimitExceeded(!usageResult.allowed)
+      setResetDate(usageResult.resetDate)
+    } catch (error) {
+      console.error('Error generating response:', error)
+      setResponses(selectedPersonas.map(id => ({
+        personaId: id,
+        content: 'Error generating response. Please try again.',
+        isLoading: false
+      })))
+    }
   }
 
   if (isLoading) {
@@ -168,9 +155,9 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
   const tier = user.subscriptionTier as SubscriptionTier
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F]">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#0A0A0F]">
       {/* Header */}
-      <div className="border-b border-white/10 bg-white/5 p-4">
+      <div className="flex-shrink-0 border-b border-white/10 bg-white/5 p-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link
             href="/dashboard/discussions"
@@ -205,7 +192,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       </div>
 
       {/* Persona Selector */}
-      <div className="border-b border-white/10 bg-white/5 p-6">
+      <div className="flex-shrink-0 border-b border-white/10 bg-white/5 p-6">
         <div className="mx-auto max-w-7xl">
           <PersonaSelector
             selectedPersonas={selectedPersonas}
@@ -216,23 +203,27 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       </div>
 
       {/* Main Content - Roundtable Grid */}
-      <div className="mx-auto max-w-7xl p-6">
-        <RoundtableGrid
-          responses={responses}
-          personas={personas}
-          tier={tier}
-        />
+      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent">
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <RoundtableGrid
+            responses={responses}
+            personas={personas}
+            tier={tier}
+          />
+        </div>
       </div>
 
       {/* Prompt Input */}
-      <PromptInput
-        onSubmit={handleSubmit}
-        disabled={selectedPersonas.length === 0}
-        limitExceeded={limitExceeded}
-        currentUsage={currentUsage}
-        limit={limit}
-        resetDate={resetDate}
-      />
+      <div className="flex-shrink-0">
+        <PromptInput
+          onSubmit={handleSubmit}
+          disabled={selectedPersonas.length === 0}
+          limitExceeded={limitExceeded}
+          currentUsage={currentUsage}
+          limit={limit}
+          resetDate={resetDate}
+        />
+      </div>
 
       {/* Compare Mode Modal */}
       {compareMode && (
