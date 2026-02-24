@@ -5,6 +5,7 @@ import PricingButton from './PricingButton'
 interface PricingFeature {
   text: string
   included: boolean
+  badge?: string
 }
 
 interface PricingTier {
