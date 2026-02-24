@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Check, Mic2, X, Zap } from 'lucide-react'
+import { Check, Mic2, Zap } from 'lucide-react'
 import PricingButton from './PricingButton'
 
 interface PricingFeature {
@@ -32,12 +32,12 @@ function getTiers(isLoggedIn: boolean): PricingTier[] {
       period: 'forever',
       description: 'Perfect for individuals exploring AI-assisted thinking.',
       features: [
-        { text: '10 AI discussions / month', included: true },
-        { text: 'All AI personas', included: true },
+        { text: '3 personas (Strategist, Simplifier, Mentor)', included: true },
+        { text: '10 discussions per month', included: true },
+        { text: 'Full conversation history', included: true },
         { text: 'Expandable reasoning threads', included: true },
-        { text: 'Conversation history', included: true },
-        { text: 'Voice mode', included: false },
-        { text: 'Team collaboration', included: false },
+        { text: 'Markdown formatted responses', included: true },
+        { text: 'Downloadable conversation export', included: true },
       ],
       cta: 'Get Started Free',
       href: isLoggedIn ? '/dashboard' : '/sign-up',
@@ -49,12 +49,12 @@ function getTiers(isLoggedIn: boolean): PricingTier[] {
       period: 'per month',
       description: 'For professionals who need more volume and team access.',
       features: [
-        { text: '100 AI discussions / month', included: true },
-        { text: 'All AI personas', included: true },
+        { text: '5 personas unlocked', included: true },
+        { text: '100 discussions per month', included: true },
+        { text: 'Full conversation history', included: true },
         { text: 'Expandable reasoning threads', included: true },
-        { text: 'Conversation history', included: true },
-        { text: 'Voice mode', included: false },
-        { text: 'Team collaboration', included: true },
+        { text: 'Markdown formatted responses', included: true },
+        { text: 'Downloadable conversation export', included: true },
       ],
       cta: 'Start with Starter',
       href: isLoggedIn ? '/api/stripe/checkout?price=starter' : '/sign-up',
@@ -67,12 +67,15 @@ function getTiers(isLoggedIn: boolean): PricingTier[] {
       period: 'per month',
       description: 'For power users who need voice and high-volume AI access.',
       features: [
-        { text: '1,000 AI discussions / month', included: true },
-        { text: 'All AI personas', included: true },
+        { text: 'All 10 personas unlocked', included: true },
+        { text: '1000 discussions per month', included: true },
+        { text: 'Full conversation history', included: true },
         { text: 'Expandable reasoning threads', included: true },
-        { text: 'Conversation history', included: true },
-        { text: 'Voice mode', included: true },
-        { text: 'Team collaboration', included: true },
+        { text: 'Markdown formatted responses', included: true },
+        { text: 'Downloadable conversation export', included: true },
+        { text: 'Compare Mode', included: true },
+        { text: 'Voice input', included: true, badge: 'Coming Soon' },
+        { text: 'Team collaboration', included: true, badge: 'Coming Soon' },
       ],
       cta: 'Start Pro',
       href: isLoggedIn ? '/api/stripe/checkout?price=pro' : '/sign-up',
@@ -86,12 +89,16 @@ function getTiers(isLoggedIn: boolean): PricingTier[] {
       period: 'contact us',
       description: 'Unlimited AI discussions with dedicated support and SLAs.',
       features: [
-        { text: 'Unlimited AI discussions', included: true },
-        { text: 'All AI personas', included: true },
+        { text: 'All 10 personas + custom persona tuning', included: true },
+        { text: 'Unlimited discussions', included: true },
+        { text: 'Full conversation history', included: true },
         { text: 'Expandable reasoning threads', included: true },
-        { text: 'Conversation history', included: true },
-        { text: 'Voice mode', included: true },
-        { text: 'Team collaboration', included: true },
+        { text: 'Markdown formatted responses', included: true },
+        { text: 'Downloadable conversation export', included: true },
+        { text: 'Compare Mode', included: true },
+        { text: 'Everything in Pro', included: true },
+        { text: 'SSO + admin controls', included: true },
+        { text: 'Dedicated account manager', included: true },
       ],
       cta: 'Contact Sales',
       href: 'mailto:sales@groupmind.ai',
@@ -165,7 +172,7 @@ export default function Pricing({ isLoggedIn = false }: PricingProps): React.JSX
                     {feature.included ? (
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
                     ) : (
-                      <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
+                      <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full border border-muted-foreground/20" />
                     )}
                     <span
                       className={
@@ -175,8 +182,10 @@ export default function Pricing({ isLoggedIn = false }: PricingProps): React.JSX
                       }
                     >
                       {feature.text}
-                      {feature.text.includes('Voice') && feature.included && (
-                        <Mic2 className="ml-1 inline h-3.5 w-3.5 text-brand-cyan" />
+                      {feature.badge && feature.included && (
+                        <span className="ml-1.5 inline-flex items-center rounded-full bg-white/10 px-1.5 py-0.5 text-xs text-muted-foreground">
+                          {feature.badge}
+                        </span>
                       )}
                     </span>
                   </li>
@@ -207,8 +216,9 @@ export default function Pricing({ isLoggedIn = false }: PricingProps): React.JSX
         </div>
 
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          All plans include full conversation history, all AI personas, and
-          expandable reasoning threads. Billing via Stripe — cancel anytime.
+          All plans include full conversation history, expandable reasoning threads,
+          markdown formatted responses, and downloadable conversation export.
+          Billing via Stripe — cancel anytime.
         </p>
       </div>
     </section>
