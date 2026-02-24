@@ -38,7 +38,12 @@ export async function orchestrateDiscussion(
     generateWithFallback(
       {
         prompt,
-        persona,
+        persona: {
+          id: persona.id,
+          name: persona.displayName,
+          systemPrompt: persona.systemPrompt,
+          temperature: persona.temperature,
+        },
         conversationHistory: conversationHistory.slice(-4),
       },
       preferredProvider

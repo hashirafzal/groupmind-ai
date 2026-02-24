@@ -81,7 +81,7 @@ export async function checkUsageLimit(
 export async function recordUsage(
   userId: string,
   usageType: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, any>
 ): Promise<void> {
   const usageTypeEnum = USAGE_TYPE_MAP[usageType] || 'AI_DISCUSSION'
 
@@ -89,7 +89,7 @@ export async function recordUsage(
     data: {
       userId,
       type: usageTypeEnum,
-      metadata: metadata || {},
+      metadata: (metadata || null) as any,
     },
   })
 }
