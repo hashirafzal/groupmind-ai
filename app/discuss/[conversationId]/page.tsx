@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import DiscussionClient from './DiscussionClient'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: Promise<{ conversationId: string }>
 }

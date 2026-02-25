@@ -5,6 +5,8 @@ import UsageMeter from '@/components/dashboard/UsageMeter'
 import Link from 'next/link'
 import { Plus, MessageSquare, Users } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage(): Promise<React.JSX.Element> {
   const session = await auth()
   if (!session?.user?.email) {

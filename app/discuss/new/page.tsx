@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import NewDiscussionForm from '@/components/discussion/NewDiscussionForm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewDiscussionPage(): Promise<React.JSX.Element> {
   const session = await auth()
   

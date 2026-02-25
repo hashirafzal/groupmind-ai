@@ -9,6 +9,8 @@ export const metadata = {
     'Simple, transparent pricing for individuals and teams. Start free, upgrade when you need more.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function PricingPage(): Promise<React.JSX.Element> {
   const session = await auth()
   

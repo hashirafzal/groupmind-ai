@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { User, CreditCard, Shield } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SettingsPage(): Promise<React.JSX.Element> {
   const session = await auth()
   if (!session?.user?.email) {
