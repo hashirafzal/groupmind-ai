@@ -4,6 +4,8 @@ import { PRICE_IDS, getStripeCustomerId, createCheckoutSession } from '@/lib/str
 import { createCheckoutSchema } from '@/lib/validations/stripe'
 import { prisma } from '@/lib/prisma'
 
+export const runtime = 'nodejs'
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const session = await auth()
