@@ -177,7 +177,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
           if (r.id === roundId) {
             return {
               ...r,
-              responses: data.messages.map((msg: any) => ({
+              responses: data.messages.map((msg: { agentId: string; content: string }) => ({
                 personaId: msg.agentId,
                 content: msg.content,
                 isLoading: false,
@@ -200,8 +200,8 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       const usageResult = await usageRes.json()
       setLimitExceeded(!usageResult.allowed)
       setResetDate(usageResult.resetDate)
-    } catch (error: any) {
-      if (error.name === 'AbortError') return
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') return
       
       console.error('Error generating response:', error)
       setRounds(prev => prev.map(r => {

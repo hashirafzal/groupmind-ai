@@ -163,7 +163,7 @@ export async function generateTextWithFallback(
       const text = await withTimeout(
         provider.generateText(prompt, {
           temperature: options?.temperature ?? 0.7,
-          maxTokens: options?.maxTokens ?? 120,
+          maxTokens: options?.maxTokens ?? 1024,
           systemPrompt: options?.systemPrompt,
         }),
         TIMEOUT_MS

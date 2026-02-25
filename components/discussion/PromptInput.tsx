@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, AlertTriangle } from 'lucide-react'
+import { Send, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 interface PromptInputProps {

@@ -45,7 +45,7 @@ export class HuggingFaceProvider implements AIProvider {
       ? `${history}\n\nUser: ${input.prompt}\n\nAssistant:`
       : `User: ${input.prompt}\n\nAssistant:`
 
-    const text = await this.callApi(prompt, input.persona.temperature, 80)
+    const text = await this.callApi(prompt, input.persona.temperature, 1024)
     const tokensUsed = Math.ceil(text.split(/\s+/).length * 1.3)
 
     return {
@@ -59,7 +59,7 @@ export class HuggingFaceProvider implements AIProvider {
     const fullPrompt = options?.systemPrompt
       ? `${options.systemPrompt}\n\nUser: ${prompt}\n\nAssistant:`
       : `User: ${prompt}\n\nAssistant:`
-    return this.callApi(fullPrompt, options?.temperature ?? 0.7, options?.maxTokens ?? 80)
+    return this.callApi(fullPrompt, options?.temperature ?? 0.7, options?.maxTokens ?? 1024)
   }
 }
 
