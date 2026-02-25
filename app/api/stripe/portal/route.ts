@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { createBillingPortalSession } from '@/lib/stripe'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(_req: NextRequest): Promise<NextResponse> {
   const { prisma } = await import('@/lib/prisma')

@@ -4,6 +4,7 @@ import { PRICE_IDS, getStripeCustomerId, createCheckoutSession } from '@/lib/str
 import { createCheckoutSchema } from '@/lib/validations/stripe'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { prisma } = await import('@/lib/prisma')

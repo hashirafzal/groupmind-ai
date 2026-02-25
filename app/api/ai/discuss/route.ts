@@ -6,6 +6,7 @@ import { recordUsage } from '@/lib/usage/enforce'
 import { buildContextWindow, generateAndStoreSummary } from '@/lib/ai/context'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const discussSchema = z.object({
   prompt: z.string().min(1).max(2000),

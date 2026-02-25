@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { UsageType } from '@prisma/client'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const checkSchema = z.object({
   usageType: z.string(),

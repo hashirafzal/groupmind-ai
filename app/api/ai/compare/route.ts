@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { generateWithFallback } from '@/lib/ai/providers/router'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const compareSchema = z.object({
   responseA: z.string().min(1),
