@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { Suspense } from 'react'
-import SmoothScrollHandler from '@/components/utils/SmoothScrollHandler'
+import SmoothScrollHandler from '../components/utils/SmoothScrollHandler'
 import './globals.css'
 
 export const metadata: Metadata = {
