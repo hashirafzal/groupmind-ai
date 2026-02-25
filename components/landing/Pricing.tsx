@@ -113,8 +113,8 @@ export default function Pricing({ isLoggedIn = false }: PricingProps): React.JSX
 
   return (
     <section id="pricing" className="px-6 py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-16 text-center">
+      <div className="mx-auto max-w-7xl reveal-on-scroll">
+        <div className="mb-16 text-center reveal-on-scroll">
           <h2 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
             Simple,{' '}
             <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent">
@@ -129,14 +129,15 @@ export default function Pricing({ isLoggedIn = false }: PricingProps): React.JSX
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {tiers.map((tier) => (
+          {tiers.map((tier, index) => (
             <div
               key={tier.name}
-              className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
+              className={`relative flex flex-col rounded-2xl border p-6 transition-all reveal-on-scroll ${
                 tier.highlighted
                   ? 'border-brand-purple/50 bg-brand-purple/8 shadow-2xl shadow-brand-purple/10'
                   : 'border-white/8 bg-white/2 hover:border-white/12 hover:bg-white/4'
               }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
               {tier.badge && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">

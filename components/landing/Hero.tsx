@@ -27,28 +27,28 @@ export default function Hero(): React.JSX.Element {
         />
       </div>
 
-      <div className="relative mx-auto max-w-5xl text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-purple/30 bg-brand-purple/10 px-4 py-1.5">
+      <div className="relative mx-auto max-w-5xl text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-purple/30 bg-brand-purple/10 px-4 py-1.5 animate-in fade-in zoom-in duration-700 delay-300 fill-mode-both">
           <Zap className="h-3.5 w-3.5 text-brand-cyan" />
           <span className="text-xs font-medium text-brand-cyan">
             Multi-Agent AI Platform
           </span>
         </div>
 
-        <h1 className="mb-6 text-5xl font-extrabold leading-tight tracking-tight text-foreground md:text-7xl">
+        <h1 className="mb-6 text-5xl font-extrabold leading-tight tracking-tight text-foreground md:text-7xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 fill-mode-both">
           Your Team&apos;s{' '}
           <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent">
             AI Think Tank
           </span>
         </h1>
 
-        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+        <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700 fill-mode-both">
           Submit one prompt. Get independent perspectives from multiple AI agents
           simultaneously. Explore deeper reasoning on demand. Built for teams who
           think at the speed of AI.
         </p>
 
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-1000 fill-mode-both">
           <Link
             href={isPaid ? '/discuss/new' : '/sign-up'}
             className="flex items-center gap-2 rounded-xl bg-brand-purple px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-purple/25 transition-all hover:bg-brand-purple/90 hover:shadow-brand-purple/40"
@@ -64,7 +64,7 @@ export default function Hero(): React.JSX.Element {
           </Link>
         </div>
 
-        <p className="mt-6 text-sm text-muted-foreground">
+        <p className="mt-6 text-sm text-muted-foreground animate-in fade-in duration-1000 delay-[1200ms] fill-mode-both">
           {isPaid 
             ? `Active Plan: ${tier} · Ready to collaborate`
             : 'Free tier available · No credit card required'

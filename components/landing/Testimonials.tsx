@@ -82,8 +82,8 @@ function StarIcon({ filled }: { filled: boolean }) {
 export default function Testimonials(): React.JSX.Element {
   return (
     <section className="px-6 py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-16 text-center">
+      <div className="mx-auto max-w-7xl reveal-on-scroll">
+        <div className="mb-16 text-center reveal-on-scroll">
           <h2 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
             Trusted by{' '}
             <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent">
@@ -99,9 +99,9 @@ export default function Testimonials(): React.JSX.Element {
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.name}
-              className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 transition-all hover:border-white/20"
+              className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 transition-all hover:border-white/20 reveal-on-scroll"
               style={{
-                animationDelay: `${index * 100}ms`,
+                transitionDelay: `${index * 100}ms`,
               }}
             >
               <div className="mb-4 flex items-center justify-between">

@@ -43,9 +43,9 @@ const proofPoints: string[] = [
 export default function SalesPitch(): React.JSX.Element {
   return (
     <section id="how-it-works" className="px-6 py-32">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl reveal-on-scroll">
         <div className="grid items-start gap-16 lg:grid-cols-2">
-          <div>
+          <div className="reveal-on-scroll">
             <h2 className="mb-6 text-4xl font-bold text-foreground md:text-5xl">
               Not another AI chat.{' '}
               <span className="bg-gradient-to-r from-brand-purple to-brand-cyan bg-clip-text text-transparent">
@@ -69,7 +69,7 @@ export default function SalesPitch(): React.JSX.Element {
             </ul>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6 reveal-on-scroll reveal-delay-2">
             {steps.map((step, index) => (
               <div key={step.number} className="flex gap-4">
                 <div className="flex flex-col items-center">

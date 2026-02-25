@@ -70,7 +70,7 @@ const features: Feature[] = [
 export default function Features(): React.JSX.Element {
   return (
     <section id="features" className="px-6 py-32">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl reveal-on-scroll">
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
             Everything your team needs to{' '}
@@ -86,10 +86,11 @@ export default function Features(): React.JSX.Element {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.slice(0, 6).map((feature) => (
+          {features.slice(0, 6).map((feature, index) => (
             <div
               key={feature.title}
-              className="group rounded-2xl border border-white/5 bg-white/2 p-6 transition-all hover:border-white/10 hover:bg-white/4"
+              className={`group rounded-2xl border border-white/5 bg-white/2 p-6 transition-all hover:border-white/10 hover:bg-white/4 reveal-on-scroll`}
+              style={{ transitionDelay: `${index * 50}ms` }}
             >
               <div
                 className={`mb-4 inline-flex rounded-xl border border-white/8 bg-white/4 p-3 ${feature.accent}`}
