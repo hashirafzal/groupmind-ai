@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 interface PromptInputProps {
   onSubmit: (prompt: string) => Promise<void>
+  onStop?: () => void
   disabled?: boolean
   limitExceeded?: boolean
   _currentUsage?: number
@@ -15,6 +16,7 @@ interface PromptInputProps {
 
 export default function PromptInput({
   onSubmit,
+  onStop,
   disabled = false,
   limitExceeded = false,
   _currentUsage = 0,
@@ -36,13 +38,22 @@ export default function PromptInput({
   const handleSubmit = async () => {
     if (!prompt.trim() || isLoading || disabled || limitExceeded) return
 
+    const currentPrompt = prompt
+    setPrompt('') // Clear immediately
     setIsLoading(true)
+    
     try {
-      await onSubmit(prompt)
-      setPrompt('')
+      await onSubmit(currentPrompt)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleStop = () => {
+    if (onStop) {
+      onStop()
+    }
+    setIsLoading(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -62,9 +73,9 @@ export default function PromptInput({
   }
 
   return (
-    <div className="flex-shrink-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F] to-transparent pb-4 pt-10">
+    <div className="flex-shrink-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F] to-transparent pb-6 pt-10">
       {limitExceeded && (
-        <div className="mx-auto max-w-4xl px-4 pb-2">
+        <div className="mx-auto max-w-3xl px-4 pb-2">
           <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -85,48 +96,63 @@ export default function PromptInput({
         </div>
       )}
 
-      <div className="mx-auto max-w-4xl px-4">
-        <div className="relative flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 transition-all focus-within:border-brand-purple/50 focus-within:bg-white/[0.07]">
+      <div className="mx-auto max-w-3xl px-4">
+        <div className="relative flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 transition-all focus-within:border-white/20 focus-within:bg-white/[0.08] shadow-2xl">
           <div className="flex items-end gap-2">
-            <div className="mb-3 ml-3 hidden text-xs font-semibold uppercase tracking-widest text-white/20 md:block">
-              GroupMind AI
-            </div>
-
             <textarea
               ref={textareaRef}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question or share an idea..."
-              disabled={disabled || limitExceeded}
+              placeholder={isLoading ? "Thinking..." : "Ask a question or share an idea..."}
+              disabled={disabled || limitExceeded || isLoading}
               rows={1}
               className="min-h-[44px] max-h-[200px] w-full resize-none overflow-y-auto bg-transparent p-3 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent"
             />
 
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading || !prompt.trim() || disabled || limitExceeded}
-              className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-brand-purple to-brand-cyan text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
+            {isLoading ? (
+              <button
+                onClick={handleStop}
+                className="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white transition-all hover:bg-red-600 shadow-lg shadow-red-500/20"
+                title="Stop generating"
+              >
+                <div className="h-3 w-3 bg-white rounded-sm" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!prompt.trim() || disabled || limitExceeded}
+                className={`mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all ${
+                  prompt.trim() 
+                    ? 'bg-white text-black hover:bg-white/90' 
+                    : 'bg-white/5 text-white/20'
+                } disabled:cursor-not-allowed`}
+              >
                 <Send className="h-5 w-5" />
-              )}
-            </button>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-between px-3 pb-1">
-            <p className="text-[10px] text-white/30">
-              Press Enter to send · Shift+Enter for new line
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] text-white/30">
+                Press Enter to send · Shift+Enter for new line
+              </p>
+              {isLoading && (
+                <div className="flex gap-1 animate-pulse">
+                  <div className="h-1 w-1 bg-brand-purple rounded-full" />
+                  <div className="h-1 w-1 bg-brand-purple rounded-full delay-75" />
+                  <div className="h-1 w-1 bg-brand-purple rounded-full delay-150" />
+                </div>
+              )}
+            </div>
             <span className="text-[10px] text-white/30">
               {prompt.length}/{maxChars}
             </span>
           </div>
         </div>
 
-        <p className="mt-2 pb-2 text-center text-xs text-white/30">
+        <p className="mt-3 text-center text-xs text-white/20">
           GroupMind AI can make mistakes. Always verify important information.
         </p>
       </div>

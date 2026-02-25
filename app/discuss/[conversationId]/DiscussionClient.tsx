@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowLeftRight, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, Loader2, Brain } from 'lucide-react'
 import PersonaSelector from '@/components/discussion/PersonaSelector'
 import RoundtableGrid from '@/components/discussion/RoundtableGrid'
 import CompareMode from '@/components/discussion/CompareMode'
@@ -34,28 +34,61 @@ interface DiscussionClientProps {
   }
 }
 
+interface DiscussionRound {
+  id: string
+  prompt: string
+  responses: PersonaResponse[]
+}
+
 export default function DiscussionClient({ user, conversation }: DiscussionClientProps): React.JSX.Element {
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>(['strategist', 'simplifier', 'mentor'])
-  const [responses, setResponses] = useState<PersonaResponse[]>([])
+  const [rounds, setRounds] = useState<DiscussionRound[]>([])
   const [compareMode, setCompareMode] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [limitExceeded, setLimitExceeded] = useState(false)
   const [currentUsage, setCurrentUsage] = useState(0)
   const [limit, setLimit] = useState(10)
   const [resetDate, setResetDate] = useState<string>()
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     async function init() {
-      // Load previous responses if any
-      const agentMessages = conversation.messages.filter((m) => m.role === 'AGENT')
-      if (agentMessages.length > 0) {
-        const loadedResponses: PersonaResponse[] = agentMessages.map((msg) => ({
-          personaId: msg.agentId || 'strategist',
-          content: msg.content,
-          isLoading: false,
-        }))
-        setResponses(loadedResponses)
+      // Group historical messages into rounds
+      const messages = conversation.messages
+      const historicalRounds: DiscussionRound[] = []
+      
+      let currentPrompt = ''
+      let currentResponses: PersonaResponse[] = []
+
+      messages.forEach((msg) => {
+        if (msg.role === 'USER') {
+          if (currentPrompt) {
+            historicalRounds.push({
+              id: Math.random().toString(),
+              prompt: currentPrompt,
+              responses: currentResponses,
+            })
+          }
+          currentPrompt = msg.content
+          currentResponses = []
+        } else if (msg.role === 'AGENT') {
+          currentResponses.push({
+            personaId: msg.agentId || 'strategist',
+            content: msg.content,
+            isLoading: false,
+          })
+        }
+      })
+
+      if (currentPrompt) {
+        historicalRounds.push({
+          id: Math.random().toString(),
+          prompt: currentPrompt,
+          responses: currentResponses,
+        })
       }
+
+      setRounds(historicalRounds)
 
       // Check usage limits via API
       try {
@@ -87,19 +120,45 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
     )
   }
 
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+      
+      setRounds(prev => {
+        const newRounds = [...prev]
+        if (newRounds.length > 0) {
+          const lastRound = newRounds[newRounds.length - 1]
+          lastRound.responses = lastRound.responses.map(r => {
+             if (r.isLoading) {
+               return { ...r, isLoading: false, content: r.content || 'Interrupted.' }
+             }
+             return r
+          })
+        }
+        return newRounds
+      })
+    }
+  }
+
   const handleSubmit = async (prompt: string) => {
     if (!user || limitExceeded) return
 
-    // Set loading states for selected personas
-    const newResponses: PersonaResponse[] = selectedPersonas.map((id) => ({
-      personaId: id,
-      content: '',
-      isLoading: true,
-    }))
-    setResponses(newResponses)
+    const roundId = Math.random().toString()
+    const newRound: DiscussionRound = {
+      id: roundId,
+      prompt,
+      responses: selectedPersonas.map((id) => ({
+        personaId: id,
+        content: '',
+        isLoading: true,
+      }))
+    }
+
+    setRounds(prev => [...prev, newRound])
+    abortControllerRef.current = new AbortController()
 
     try {
-      // Call API for discussion (this handles recording usage and saving messages)
       const response = await fetch('/api/ai/discuss', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,24 +167,31 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
           personas: selectedPersonas,
           conversationId: conversation.id,
         }),
+        signal: abortControllerRef.current.signal
       })
 
       const data = await response.json()
       
       if (data.messages) {
-        const results = data.messages.map((msg: { agentId: string; content: string }) => ({
-          personaId: msg.agentId,
-          content: msg.content,
-          isLoading: false,
+        setRounds(prev => prev.map(r => {
+          if (r.id === roundId) {
+            return {
+              ...r,
+              responses: data.messages.map((msg: any) => ({
+                personaId: msg.agentId,
+                content: msg.content,
+                isLoading: false,
+              }))
+            }
+          }
+          return r
         }))
-        setResponses(results)
       } else {
         throw new Error(data.error || 'Failed to generate response')
       }
 
       setCurrentUsage((prev) => prev + 1)
 
-      // Refresh usage check via API
       const usageRes = await fetch('/api/usage/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,13 +200,25 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       const usageResult = await usageRes.json()
       setLimitExceeded(!usageResult.allowed)
       setResetDate(usageResult.resetDate)
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return
+      
       console.error('Error generating response:', error)
-      setResponses(selectedPersonas.map(id => ({
-        personaId: id,
-        content: 'Error generating response. Please try again.',
-        isLoading: false
-      })))
+      setRounds(prev => prev.map(r => {
+        if (r.id === roundId) {
+          return {
+            ...r,
+            responses: selectedPersonas.map(id => ({
+              personaId: id,
+              content: 'Error generating response. Please try again.',
+              isLoading: false
+            }))
+          }
+        }
+        return r
+      }))
+    } finally {
+      abortControllerRef.current = null
     }
   }
 
@@ -173,7 +251,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
             {tier === 'PRO' || tier === 'ENTERPRISE' ? (
               <button
                 onClick={() => setCompareMode(true)}
-                disabled={responses.length < 2}
+                disabled={rounds.length === 0}
                 className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10 disabled:opacity-50"
               >
                 <ArrowLeftRight className="h-4 w-4" />
@@ -204,12 +282,34 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
 
       {/* Main Content - Roundtable Grid */}
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent">
-        <div className="mx-auto max-w-6xl px-4 py-10">
-          <RoundtableGrid
-            responses={responses}
-            personas={personas}
-            tier={tier}
-          />
+        <div className="mx-auto max-w-6xl px-4 py-10 space-y-20">
+          {rounds.map((round) => (
+            <div key={round.id} className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="flex justify-end">
+                <div className="max-w-[80%] rounded-2xl bg-white/5 border border-white/10 px-6 py-4 shadow-xl">
+                  <p className="text-foreground">{round.prompt}</p>
+                </div>
+              </div>
+              
+              <RoundtableGrid
+                responses={round.responses}
+                personas={personas}
+                tier={tier}
+              />
+            </div>
+          ))}
+
+          {rounds.length === 0 && (
+            <div className="flex h-64 flex-col items-center justify-center text-center">
+              <div className="mb-4 rounded-full bg-white/5 p-4">
+                <Brain className="h-10 w-10 text-brand-purple" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground">Ready to Think?</h3>
+              <p className="max-w-xs text-sm text-muted-foreground mt-2">
+                Select your personas and send a prompt to start the roundtable discussion.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -217,6 +317,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       <div className="flex-shrink-0">
         <PromptInput
           onSubmit={handleSubmit}
+          onStop={handleStop}
           disabled={selectedPersonas.length === 0}
           limitExceeded={limitExceeded}
           _currentUsage={currentUsage}
@@ -228,12 +329,12 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       {/* Compare Mode Modal */}
       {compareMode && (
         <CompareMode
-          selectedResponses={responses
+          selectedResponses={rounds[rounds.length - 1]?.responses
             .filter((r) => !r.isLoading)
             .map((r) => ({
               personaId: r.personaId,
               content: r.content,
-            }))}
+            })) || []}
           personas={personas}
           tier={tier}
           onClose={() => setCompareMode(false)}

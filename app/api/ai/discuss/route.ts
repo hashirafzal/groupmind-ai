@@ -3,11 +3,12 @@ import { auth } from '@/lib/auth'
 import { z } from 'zod'
 import { orchestrateDiscussion } from '@/lib/ai/orchestrator'
 import { recordUsage } from '@/lib/usage/enforce'
+import { buildContextWindow, generateAndStoreSummary } from '@/lib/ai/context'
 
 export const runtime = 'nodejs'
 
 const discussSchema = z.object({
-  prompt: z.string().min(1).max(500),
+  prompt: z.string().min(1).max(2000),
   personas: z.array(z.string()).min(1),
   conversationId: z.string().optional(),
   provider: z.enum(['groq', 'google', 'openrouter', 'huggingface', 'aimlapi']).optional(),
@@ -69,7 +70,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     })
 
-    const aiResponses = await orchestrateDiscussion(prompt, personas, [], provider)
+    const { messages: history, shouldGenerateSummary } = await buildContextWindow(conversation.id, prompt)
+
+    const aiResponses = await orchestrateDiscussion(
+      prompt,
+      personas,
+      history.map(h => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: h.content })),
+      provider
+    )
 
     for (const response of aiResponses) {
       await prisma.message.create({
@@ -80,6 +88,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           content: response.content,
         },
       })
+    }
+
+    if (shouldGenerateSummary) {
+      generateAndStoreSummary(conversation.id).catch(err => console.error('[SUMMARY_GEN]', err))
     }
 
     return NextResponse.json(

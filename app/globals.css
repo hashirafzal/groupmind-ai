@@ -31,8 +31,8 @@
   * {
     @apply border-border;
   }
-  html, body {
-    @apply h-full overflow-hidden;
+  html {
+    @apply scroll-smooth;
   }
   body {
     @apply bg-background text-foreground;

@@ -1,7 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight, Zap } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
 export default function Hero(): React.JSX.Element {
+  const { data: session } = useSession()
+  const tier = session?.user?.subscriptionTier || 'FREE'
+  const isPaid = tier !== 'FREE'
+
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-20">
       <div
@@ -43,22 +50,25 @@ export default function Hero(): React.JSX.Element {
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Link
-            href="/sign-up"
+            href={isPaid ? '/discuss/new' : '/sign-up'}
             className="flex items-center gap-2 rounded-xl bg-brand-purple px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand-purple/25 transition-all hover:bg-brand-purple/90 hover:shadow-brand-purple/40"
           >
-            Start for Free
+            {isPaid ? 'Start Discussion' : 'Start for Free'}
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            href="#how-it-works"
+            href={isPaid ? '/dashboard' : '#how-it-works'}
             className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-8 py-3.5 text-base font-semibold text-foreground transition-all hover:bg-white/10"
           >
-            See How It Works
+            {isPaid ? 'View Dashboard' : 'See How It Works'}
           </Link>
         </div>
 
         <p className="mt-6 text-sm text-muted-foreground">
-          Free tier available · No credit card required
+          {isPaid 
+            ? `Active Plan: ${tier} · Ready to collaborate`
+            : 'Free tier available · No credit card required'
+          }
         </p>
 
         <div className="mx-auto mt-20 max-w-4xl">

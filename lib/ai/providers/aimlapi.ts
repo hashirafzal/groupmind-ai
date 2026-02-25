@@ -39,7 +39,7 @@ export class AIMLAPIProvider implements AIProvider {
       { role: 'user', content: input.prompt },
     ]
 
-    const text = await this.callApi(messages, input.persona.temperature, 120)
+    const text = await this.callApi(messages, input.persona.temperature, 2048)
     const tokensUsed = Math.ceil(text.split(/\s+/).length * 1.3)
 
     return {
@@ -54,7 +54,7 @@ export class AIMLAPIProvider implements AIProvider {
       { role: 'system', content: options?.systemPrompt || 'You are a helpful assistant.' },
       { role: 'user', content: prompt },
     ]
-    return this.callApi(messages, options?.temperature ?? 0.7, options?.maxTokens ?? 120)
+    return this.callApi(messages, options?.temperature ?? 0.7, options?.maxTokens ?? 1024)
   }
 }
 

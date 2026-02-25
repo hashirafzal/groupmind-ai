@@ -16,30 +16,6 @@ export async function orchestrateDiscussion(
     throw new Error('No valid personas selected')
   }
 
-  const summaryPrompt = `Summarize the following discussion in 80 words or less: "${prompt}"`
-  const summaryPersona = {
-    id: 'summarizer',
-    name: 'Summary',
-    systemPrompt: 'You are a concise summarizer. Provide brief summaries under 80 words.',
-    temperature: 0.3,
-  }
-
-  try {
-    const summaryResult = await generateWithFallback(
-      { prompt: summaryPrompt, persona: summaryPersona, conversationHistory: [] },
-      preferredProvider
-    )
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.log(`[AI] Summary generated using provider: ${summaryResult.provider}`)
-    }
-  } catch {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.log('[AI] Summary generation failed, continuing with agents')
-    }
-  }
-
   const promises = activePersonas.map(persona =>
     generateWithFallback(
       {
@@ -50,7 +26,7 @@ export async function orchestrateDiscussion(
           systemPrompt: persona.systemPrompt,
           temperature: persona.temperature,
         },
-        conversationHistory: conversationHistory.slice(-4),
+        conversationHistory: conversationHistory,
       },
       preferredProvider
     ).then(result => {
