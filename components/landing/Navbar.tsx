@@ -6,7 +6,7 @@ import { Brain, ChevronDown, LogOut, User, Settings } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export default function Navbar(): React.JSX.Element {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 

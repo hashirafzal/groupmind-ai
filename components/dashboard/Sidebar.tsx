@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
-import { Brain, Home, MessageSquare, Settings, CreditCard, LogOut } from 'lucide-react'
+import { Brain, Home, MessageSquare, Settings, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {

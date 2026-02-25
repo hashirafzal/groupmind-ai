@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Check, Mic2, Zap } from 'lucide-react'
+import { Check, Zap } from 'lucide-react'
 import PricingButton from './PricingButton'
 
 interface PricingFeature {

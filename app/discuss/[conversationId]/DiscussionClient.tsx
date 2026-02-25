@@ -113,7 +113,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
       const data = await response.json()
       
       if (data.messages) {
-        const results = data.messages.map((msg: any) => ({
+        const results = data.messages.map((msg: { agentId: string; content: string }) => ({
           personaId: msg.agentId,
           content: msg.content,
           isLoading: false,
@@ -219,7 +219,7 @@ export default function DiscussionClient({ user, conversation }: DiscussionClien
           onSubmit={handleSubmit}
           disabled={selectedPersonas.length === 0}
           limitExceeded={limitExceeded}
-          currentUsage={currentUsage}
+          _currentUsage={currentUsage}
           limit={limit}
           resetDate={resetDate}
         />

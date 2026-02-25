@@ -88,8 +88,6 @@ export async function generateWithFallback(
     providersToTry = [preferredProvider, ...providersToTry.filter(p => p !== preferredProvider)]
   }
 
-  let lastError: unknown = new Error('No providers available')
-
   for (const providerId of providersToTry) {
     if (triedProviders.has(providerId)) continue
     triedProviders.add(providerId)
@@ -122,7 +120,6 @@ export async function generateWithFallback(
 
       return { output, provider: providerId }
     } catch (error) {
-      lastError = error
       if (!isRetriableError(error)) {
         break
       }

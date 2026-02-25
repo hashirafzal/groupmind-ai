@@ -1,9 +1,7 @@
 import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import Navbar from '@/components/landing/Navbar'
 import Pricing from '@/components/landing/Pricing'
 import Footer from '@/components/landing/Footer'
-import { headers } from 'next/headers'
 
 export const metadata = {
   title: 'Pricing — GroupMind AI',

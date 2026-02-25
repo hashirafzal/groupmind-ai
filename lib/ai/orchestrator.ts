@@ -29,9 +29,15 @@ export async function orchestrateDiscussion(
       { prompt: summaryPrompt, persona: summaryPersona, conversationHistory: [] },
       preferredProvider
     )
-    console.log(`[AI] Summary generated using provider: ${summaryResult.provider}`)
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log(`[AI] Summary generated using provider: ${summaryResult.provider}`)
+    }
   } catch {
-    console.log('[AI] Summary generation failed, continuing with agents')
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('[AI] Summary generation failed, continuing with agents')
+    }
   }
 
   const promises = activePersonas.map(persona =>
@@ -48,7 +54,10 @@ export async function orchestrateDiscussion(
       },
       preferredProvider
     ).then(result => {
-      console.log(`[AI] Agent ${persona.id} generated using provider: ${result.provider}`)
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.log(`[AI] Agent ${persona.id} generated using provider: ${result.provider}`)
+      }
       return result.output
     })
   )

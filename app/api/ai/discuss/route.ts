@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { orchestrateDiscussion } from '@/lib/ai/orchestrator'
 import { recordUsage } from '@/lib/usage/enforce'
 
+export const runtime = 'nodejs'
+
 const discussSchema = z.object({
   prompt: z.string().min(1).max(500),
   personas: z.array(z.string()).min(1),

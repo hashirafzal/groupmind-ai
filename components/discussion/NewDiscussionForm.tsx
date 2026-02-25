@@ -66,10 +66,10 @@ export default function NewDiscussionForm({ tier = 'FREE' }: NewDiscussionFormPr
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e as any)
+      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>)
     }
   }
 

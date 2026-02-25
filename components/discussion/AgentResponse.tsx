@@ -8,7 +8,7 @@ interface AgentResponseProps {
   personaId: string
   displayName: string
   content: string
-  tier: SubscriptionTier
+  _tier: SubscriptionTier
   expanded?: boolean
 }
 
@@ -29,7 +29,7 @@ export default function AgentResponse({
   personaId,
   displayName,
   content,
-  tier,
+  _tier,
   expanded = false,
 }: AgentResponseProps): React.JSX.Element {
   const avatarColor = personaColors[personaId] || '#8B5CF6'

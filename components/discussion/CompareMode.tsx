@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, ArrowLeftRight, Loader2, Download } from 'lucide-react'
+import { ArrowLeftRight, Loader2, Download } from 'lucide-react'
 import AgentResponse from './AgentResponse'
 import type { Persona } from '@/lib/ai/personas'
 import type { SubscriptionTier } from '@prisma/client'
@@ -163,7 +163,7 @@ export default function CompareMode({
                     personaId={response.personaId}
                     displayName={persona.displayName}
                     content={response.content}
-                    tier={tier}
+                    _tier={tier}
                     expanded={true}
                   />
                 </div>

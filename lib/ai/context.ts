@@ -1,10 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { generateWithFallback } from './providers/router'
 
-interface MessageContext {
-  role: 'user' | 'assistant'
-  content: string
-}
 
 interface BuildContextResult {
   messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>

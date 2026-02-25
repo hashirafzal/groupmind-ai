@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import type { UsageType } from '@prisma/client'
 
 const checkSchema = z.object({
   usageType: z.string(),
@@ -40,14 +41,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     const currentMonth = new Date().toISOString().slice(0, 7)
-    const usageTypeMap: Record<string, string> = {
+    const usageTypeMap: Record<string, UsageType> = {
       discussion: 'AI_DISCUSSION',
     }
 
     const count = await prisma.usageRecord.count({
       where: {
         userId: user.id,
-        type: (usageTypeMap[usageType] || 'AI_DISCUSSION') as any,
+        type: usageTypeMap[usageType] || 'AI_DISCUSSION',
         createdAt: {
           gte: new Date(`${currentMonth}-01`),
         },

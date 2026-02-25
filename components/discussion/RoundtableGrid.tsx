@@ -112,7 +112,7 @@ export default function RoundtableGrid({
                   personaId={response.personaId}
                   displayName={persona.displayName}
                   content={response.content}
-                  tier={tier}
+                  _tier={tier}
                   expanded={isExpanded}
                 />
               )}

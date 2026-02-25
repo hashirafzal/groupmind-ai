@@ -1,13 +1,21 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { AIProvider, AIInput, AIOutput } from './interface'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '')
+let genAI: GoogleGenerativeAI | null = null
+
+function getGenAI(): GoogleGenerativeAI {
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '')
+  }
+  return genAI
+}
 
 export class GeminiProvider implements AIProvider {
   id = 'google' as const
 
   async generate(input: AIInput): Promise<AIOutput> {
-    const model = genAI.getGenerativeModel({
+    const ai = getGenAI()
+    const model = ai.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: input.persona.systemPrompt,
       generationConfig: {
@@ -16,6 +24,7 @@ export class GeminiProvider implements AIProvider {
       },
     })
 
+    // ...existing code...
     const history = input.conversationHistory
       .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
       .join('\n')
@@ -37,7 +46,8 @@ export class GeminiProvider implements AIProvider {
   }
 
   async generateText(prompt: string, options?: { temperature?: number; maxTokens?: number; systemPrompt?: string }): Promise<string> {
-    const model = genAI.getGenerativeModel({
+    const ai = getGenAI()
+    const model = ai.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: options?.systemPrompt || 'You are a helpful assistant.',
       generationConfig: {

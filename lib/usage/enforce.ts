@@ -81,17 +81,24 @@ export async function checkUsageLimit(
 export async function recordUsage(
   userId: string,
   usageType: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, string | number | boolean | null | undefined>
 ): Promise<void> {
   const usageTypeEnum = USAGE_TYPE_MAP[usageType] || 'AI_DISCUSSION'
 
-  await prisma.usageRecord.create({
-    data: {
-      userId,
-      type: usageTypeEnum,
-      metadata: (metadata || null) as any,
-    },
-  })
+  const data: {
+    userId: string
+    type: UsageType
+    metadata?: Record<string, string | number | boolean | null | undefined>
+  } = {
+    userId,
+    type: usageTypeEnum,
+  }
+
+  if (metadata) {
+    data.metadata = metadata
+  }
+
+  await prisma.usageRecord.create({ data })
 }
 
 export async function getCurrentUsage(userId: string, usageType: string): Promise<number> {

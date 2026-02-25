@@ -8,7 +8,7 @@ interface PromptInputProps {
   onSubmit: (prompt: string) => Promise<void>
   disabled?: boolean
   limitExceeded?: boolean
-  currentUsage?: number
+  _currentUsage?: number
   limit?: number
   resetDate?: string
 }
@@ -17,7 +17,7 @@ export default function PromptInput({
   onSubmit,
   disabled = false,
   limitExceeded = false,
-  currentUsage = 0,
+  _currentUsage = 0,
   limit = 10,
   resetDate,
 }: PromptInputProps): React.JSX.Element {

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateWithFallback } from '@/lib/ai/providers/router'
 
+export const runtime = 'nodejs'
+
 const compareSchema = z.object({
   responseA: z.string().min(1),
   responseB: z.string().min(1),
