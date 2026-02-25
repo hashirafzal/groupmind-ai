@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { orchestrateDiscussion } from '@/lib/ai/orchestrator'
 import { recordUsage } from '@/lib/usage/enforce'
@@ -15,6 +14,7 @@ const discussSchema = z.object({
 })
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const { prisma } = await import('@/lib/prisma')
   try {
     const session = await auth()
     if (!session?.user?.email) {

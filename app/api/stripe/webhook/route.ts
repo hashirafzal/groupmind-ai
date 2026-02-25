@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
@@ -16,6 +15,7 @@ function getTierFromPriceId(priceId: string): 'STARTER' | 'PRO' | 'ENTERPRISE' |
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const { prisma } = await import('@/lib/prisma')
   const body = await req.text()
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')

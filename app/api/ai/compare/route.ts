@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateWithFallback } from '@/lib/ai/providers/router'
 
@@ -13,6 +12,7 @@ const compareSchema = z.object({
 })
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const { prisma } = await import('@/lib/prisma')
   try {
     const session = await auth()
     if (!session?.user?.email) {

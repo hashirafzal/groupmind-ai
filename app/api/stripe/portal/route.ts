@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { createBillingPortalSession } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
 
 export const runtime = 'nodejs'
 
 export async function POST(_req: NextRequest): Promise<NextResponse> {
+  const { prisma } = await import('@/lib/prisma')
   try {
     const session = await auth()
     if (!session?.user?.email) {
