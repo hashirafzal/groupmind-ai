@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import type { UsageType } from '@prisma/client'
 
+export const runtime = 'nodejs'
+
 const checkSchema = z.object({
   usageType: z.string(),
 })
